@@ -21,9 +21,13 @@ module.exports = function(app) {
   if(process.env.NODE_ENV === 'development'){
     app.all("*", (req, res) => res.status(200).send("My Node.js API"));
   }else{
-    app.use(express.static(path.join(__dirname, "/../client/build")));
+    // app.use(express.static(path.join(__dirname, "/../client/build")));
+    // app.get('/*', (req, res) => {
+    //   res.sendFile(path.join(__dirname+'/../client/build/index.html'));
+    // });
+    app.use(express.static(path.join(__dirname, "/build")));
     app.get('/*', (req, res) => {
-      res.sendFile(path.join(__dirname+'/../client/build/index.html'));
+      res.sendFile(path.join(__dirname+'/build/index.html'));
     });
   }
 };
