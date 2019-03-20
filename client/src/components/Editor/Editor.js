@@ -24,7 +24,7 @@ import './Editor.scss';
 const Option = Select.Option;
 const InputGroup = Input.Group;
 
-const socket = io("http://localhost:5001")
+const socket = io()
 
 class Editor extends Component {
 
