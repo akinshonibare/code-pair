@@ -1,0 +1,28 @@
+.dashboard{
+    height: 100vh;
+    width: 100%;
+    // color: #FFFFFF;
+}
+
+.logo {
+    display: flex;
+    flex-direction: row;
+    height: 40px;
+    background: rgba(255,255,255,.2);
+    margin: 16px;
+
+    span{
+      line-height: 40px;
+      margin-left: 10px;
+    }
+  }
+
+.croom {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #000000;
+  align-items: center;
+  justify-content: center;
+}
