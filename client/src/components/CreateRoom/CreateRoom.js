@@ -53,7 +53,7 @@ class CreateRoom extends Component {
             visible={this.props.modalVisible}
             onOk={() => this.setRoom()}
             onCancel={() => this.props.setModalVisible(false)}
-            className='createroom'
+            
           >
             <Input addonBefore="room" style={{ width: '100%' }} defaultValue={this.state.room} disabled/> 
             <br/>
@@ -62,7 +62,7 @@ class CreateRoom extends Component {
                 <Select style={{ width: '50%' }} defaultValue={this.state.language} onChange={this.setLanguage}>
                     {LANGUAGES.map((item, i) => <Option key={i} value={item}>{item}</Option>)}
                 </Select>
-                <Button style={{ width: '50%' }}>
+                <Button style={{ width: '50%' }} className='croom-button'>
                     Upload Starter Code File
                     <input type="file" name="file" id="code-file" className="inputfile" onChange={this.handleUploadFile} />
                 </Button>

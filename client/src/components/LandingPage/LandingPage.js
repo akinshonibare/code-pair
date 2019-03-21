@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Button} from 'antd';
+import {Button, Icon } from 'antd';
 import './LandingPage.scss';
 // import FactCard from '../FactCard/FactCard';
 import {getsnippets} from '../../actions/snippetsAction';
@@ -27,7 +27,7 @@ class LandingPage extends Component {
         return(
             <div className='landingpage-wrapper'>  
                 {/* <FactCard snippet={this.state.data}/> */}
-                <Button style={{ width: 620 }} onClick={this.props.onLoginClick}>Enter</Button>
+                <Button style={{ width: 620 }} onClick={this.props.onLoginClick}><Icon type="github" />Enter Using Github</Button>
             </div>
         );
         }
