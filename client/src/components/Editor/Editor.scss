@@ -8,10 +8,13 @@
 }
 
 .option {
+    height: 75px;
     display: flex;
+    align-items: center;
+    justify-content: center;
     flex-direction: row;
     color: #000000;
-    margin: 2% 0; 
+    // margin: 2% 0; 
 
     button{
         float: right;

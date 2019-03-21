@@ -5,6 +5,7 @@ const expressSession = require("express-session");
 const codeRoutes = require('./routes/code');
 const snippetsRoutes = require('./routes/snippets');
 const twilioRoutes = require('./routes/twilio');
+const codefileRoutes = require('./routes/codefile');
 const errorMiddleware = require('./errors/middleware');
 
 module.exports = function(app) {
@@ -13,6 +14,7 @@ module.exports = function(app) {
   apiRouter.use('/code', codeRoutes);
   apiRouter.use('/twilio', twilioRoutes);
   apiRouter.use('/snippets', snippetsRoutes);
+  apiRouter.use('/codefile', codefileRoutes);
   // mount api router on to app
   app.use('/api', apiRouter);
   // mount middleware to handle errors
@@ -21,13 +23,9 @@ module.exports = function(app) {
   if(process.env.NODE_ENV === 'development'){
     app.all("*", (req, res) => res.status(200).send("My Node.js API"));
   }else{
-    // app.use(express.static(path.join(__dirname, "/../client/build")));
-    // app.get('/*', (req, res) => {
-    //   res.sendFile(path.join(__dirname+'/../client/build/index.html'));
-    // });
-    app.use(express.static(path.join(__dirname, "/build")));
+    app.use(express.static(path.join(__dirname, "/../client/build")));
     app.get('/*', (req, res) => {
-      res.sendFile(path.join(__dirname+'/build/index.html'));
+      res.sendFile(path.join(__dirname+'/../client/build/index.html'));
     });
   }
 };

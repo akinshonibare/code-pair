@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const runCode = (code) => {
+const runPythonCode = (code) => {
     return axios.post('/api/code/python', {code})
 }
 
- export { runCode }
+ export { runPythonCode }

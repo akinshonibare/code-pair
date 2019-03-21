@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import { Modal, Input, Select} from 'antd';
+import { Modal, Input, Select, Button} from 'antd';
 import { connect } from "react-redux";
 import randomstring from "randomstring";
 import { setRoomData } from '../../actions/infoAction';
+import { postFile } from '../../actions/postFileAction';
+import './CreateRoom.scss';
 
 const InputGroup = Input.Group;
 const Option = Select.Option;
@@ -34,6 +36,15 @@ class CreateRoom extends Component {
         this.props.setInRoom(true)
     }
 
+    handleUploadFile = (event) => {
+        const data = new FormData();
+        data.append('file', event.target.files[0]);
+        // '/files' is your node.js route that triggers our middleware
+        postFile(data).then(res => {
+            this.props.setCodeFromFile(res.data.result)
+        });
+    }
+
     render(){
         const LANGUAGES = ['python', 'javascript']
         return(
@@ -42,6 +53,7 @@ class CreateRoom extends Component {
             visible={this.props.modalVisible}
             onOk={() => this.setRoom()}
             onCancel={() => this.props.setModalVisible(false)}
+            className='createroom'
           >
             <Input addonBefore="room" style={{ width: '100%' }} defaultValue={this.state.room} disabled/> 
             <br/>
@@ -49,7 +61,12 @@ class CreateRoom extends Component {
             <InputGroup compact>
                 <Select style={{ width: '50%' }} defaultValue={this.state.language} onChange={this.setLanguage}>
                     {LANGUAGES.map((item, i) => <Option key={i} value={item}>{item}</Option>)}
-                </Select>        
+                </Select>
+                <Button style={{ width: '50%' }}>
+                    Upload Starter Code File
+                    <input type="file" name="file" id="code-file" className="inputfile" onChange={this.handleUploadFile} />
+                </Button>
+     
             </InputGroup>
           </Modal>
         );

@@ -35,19 +35,32 @@ class Editor extends Component {
             theme: 'tomorrow',
             code: '',
             room: '',
-            users: []
+            // users: [],
+            currentlyTyping: null
         }
 
-        socket.on('receive code', (payload) => this.updateCodeFromSockets(payload.code));
+        socket.on('receive code', (payload) => this.updateCodeFromSockets(payload));
         socket.on('load users and code', () => this.sendUsersAndCode())
         socket.on('receive users and code', (payload) => this.updateUsersAndCodeInState(payload))
+        socket.on('new user join', (users) => this.joinUser(users))
+        socket.on('user left room', (user) => this.removeUser(user))
+    }
+
+    componentWillMount() {
+        if(this.props.codeFromFile){
+            this.setState({
+                code: this.props.codeFromFile
+            })
+        }
     }
 
     onChange = (newValue) =>  {
         this.setState({
-            code: newValue
-        }, () => console.log(this.state.code))
-        socket.emit('coding event', {code: newValue, room: this.state.room})
+            code: newValue,
+            // currentlyTyping: `${this.props.userData.name}-${this.props.userData.id}`
+        })
+        this.props.setCurrentlyTyping(`${this.props.userData.name}-${this.props.userData.id}`)
+        socket.emit('coding event', {code: newValue, room: this.state.room, currentlyTyping: `${this.props.userData.name}-${this.props.userData.id}`})
     }
 
     setTheme = (newTheme) => {
@@ -56,11 +69,31 @@ class Editor extends Component {
         })
     }
 
+    joinUser = (user) => {
+        const combinedUsers = [...this.props.users, user]
+        const newUsers = Array.from(new Set(combinedUsers));
+        const cleanUsers = newUsers.filter(user => {return user.length > 1})
+        // this.setState({users: cleanUsers})
+        this.props.setUsers(cleanUsers)
+    }
+
+    removeUser(user) {
+        const newUsers = Object.assign([], this.props.users);
+        const indexOfUserToDelete = this.props.users.findIndex(Olduser => {return Olduser == user.user})
+        newUsers.splice(indexOfUserToDelete, 1);
+        // this.setState({users: newUsers})
+        this.props.setUsers(newUsers)
+      }
+
     componentDidMount() {
+        const users = [...this.props.users, `${this.props.userData.name}-${this.props.userData.id}`];
+        const user = `${this.props.userData.name}-${this.props.userData.id}`;
+        this.props.setUsers(users)        
         this.setState({
             room: this.props.roomData.roomName,
-            language: this.props.roomData.language
-        }, () => socket.emit('room', {room: this.state.room}))  
+            language: this.props.roomData.language,
+            // users: users
+        }, () => socket.emit('room', {room: this.state.room, user: user}))  
     }
 
     componentWillUnmount() {
@@ -68,21 +101,41 @@ class Editor extends Component {
     }
     
 
-    updateCodeFromSockets = (code) => {
+    updateCodeFromSockets = (payload) => {
+        console.log(payload)
         this.setState({
-            code: code
+            code: payload.code,
+            // currentlyTyping: payload.currentlyTyping
         });
+        this.props.setCurrentlyTyping(payload.currentlyTyping)
     }
 
     updateUsersAndCodeInState = (payload) => {
         this.setState({
             code: payload.code,
-            language: payload.language
+            language: payload.language,
+            // users: payload.users
         });
+        let newUsers = [...payload.users, `${this.props.userData.name}-${this.props.userData.id}`]
+        this.props.setUsers(newUsers)
+
     }
 
     sendUsersAndCode = () =>  {
-        socket.emit('send users and code', {room:this.state.room, code: this.state.code, language: this.state.language})
+        socket.emit('send users and code', {room:this.state.room, code: this.state.code, language: this.state.language, users: this.props.users})
+    }
+
+    downloadFile = () => {
+        const element = document.createElement("a");
+        const file = new Blob([this.state.code], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        if(this.state.language === "javascript"){
+            element.download = "file.js"            
+        }else if(this.state.language === "python"){
+            element.download = "file.py" 
+        }
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
     }
     
 
@@ -100,8 +153,8 @@ class Editor extends Component {
                             {THEMES.map(item => (<Option key={item} value={item}>{item}</Option>))}
                         </Select>  
                     </InputGroup>
-
-                    <Button onClick={this.runCode}>run</Button>
+                    <Button onClick={() => this.downloadFile()}>download code</Button>
+                    <Button onClick={() => this.props.run(this.state.code, this.state.language)}>run</Button>
                 </div>
                 <AceEditor
                 mode={language}

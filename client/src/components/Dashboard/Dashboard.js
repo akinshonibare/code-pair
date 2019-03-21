@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-import { Layout, Button, Avatar, Empty, Popconfirm } from 'antd';
+import { Layout, Button, Avatar, Empty, Popconfirm, Tag, Timeline, Icon } from 'antd';
 import { Widget, addResponseMessage } from 'react-chat-widget';
 import CreateRoom from '../CreateRoom/CreateRoom';
+import RightSection from '../RightSection/RightSection';
 import JoinRoom from '../JoinRoom/JoinRoom';
 import PanelGroup from 'react-panelgroup';
 import Editor from '../Editor/Editor';
+import { runPythonCode } from '../../actions/runCode';
 import { setRoomData } from '../../actions/infoAction';
 import _ from 'lodash';
 import './Dashboard.scss';
@@ -21,7 +23,11 @@ class Dashboard extends Component {
             collapsed: false,
             Inroom: false,
             createroommodal: false,
-            joinroommodal: false
+            joinroommodal: false,
+            result: undefined,
+            codeFromFile: undefined,
+            users: [],
+            currentlyTyping: null
         }
     }
     componentDidUpdate(prevProps, prevState){
@@ -34,6 +40,18 @@ class Dashboard extends Component {
         this.setState({
           collapsed: !this.state.collapsed,
         });
+    }
+
+    setUsers = (users) => {
+        this.setState({
+            users: users
+        })
+    }
+
+    setCurrentlyTyping = (user) => {
+        this.setState({
+            currentlyTyping: user
+        })
     }
 
     onCollapse = (collapsed) => {
@@ -73,6 +91,26 @@ class Dashboard extends Component {
         }
       }
       
+    run = (code, language) => {
+        let value = code;
+        if(language === 'python'){
+            runPythonCode(value).then(result => {
+                this.setState({
+                    result: result.data.result
+                })
+            })
+        }else{
+            this.setState({
+                result: "language not supported"
+            })
+        }
+    }
+
+    setCodeFromFile = (code) => {
+        this.setState({
+            codeFromFile: code
+        })
+    }
     
     render(){
         if(_.isEmpty(this.props.userData)){
@@ -85,10 +123,18 @@ class Dashboard extends Component {
                     <div className="logo">
                         <Avatar size='large' src={this.props.userData.photo} />
                     </div>
-                    <div>
+                    <div style={{textAlign: 'center'}}>
                         {this.state.Inroom && (
-                            <h3>ROOM {this.props.roomData.roomName}</h3>
+                            <Tag> {this.props.roomData.roomName}</Tag>
                         )}
+                        <div className='users'>
+                          <Timeline>
+                            {this.state.users.map(user => (
+                                // <Timeline.Item dot={this.state.currentlyTyping === user && <Icon type="ellipsis"/>} key={user}>{user.split('-')[0]}</Timeline.Item>
+                                <Timeline.Item color={this.state.currentlyTyping === user ? "green" : "blue"} key={user}>{user.split('-')[0]}</Timeline.Item>
+                            ))}
+                        </Timeline>
+                        </div>
                     </div>
                     <Popconfirm title="Are you sure you want to log out?" placement='right' onConfirm={this.confirm} okText="Yes" cancelText="No">
                         <Button type="primary" style={{ width: '50%', position: 'absolute', bottom: '50px', left: '25%' }}>log out</Button>                 
@@ -101,9 +147,8 @@ class Dashboard extends Component {
                         <Content style={{ margin: '0 16px' }}>
                             {this.state.Inroom ?
                                 <PanelGroup style={{ background: '#fff', minHeight: '100%' }}>
-                                    <Editor />
-                                    {/* <VideoComponent/> */}
-                                    <div />
+                                    <Editor run={this.run} codeFromFile={this.state.codeFromFile} users={this.state.users} setUsers={this.setUsers} currentlyTyping={this.state.currentlyTyping} setCurrentlyTyping={this.setCurrentlyTyping}/>
+                                    {this.state.result ? <RightSection result={this.state.result}/> : <div />}
                                 </PanelGroup>
                                 :
                                 <div className='croom'>
@@ -130,7 +175,7 @@ class Dashboard extends Component {
                     </Layout>
                 </Layout>
                 <Widget handleNewUserMessage={this.handleNewUserMessage} title='chat room' subtitle=''/>
-                <CreateRoom modalVisible={this.state.createroommodal} setModalVisible={this.createRoomVisible} setInRoom={this.setInRoom}/>                
+                <CreateRoom modalVisible={this.state.createroommodal} setModalVisible={this.createRoomVisible} setInRoom={this.setInRoom} setCodeFromFile={this.setCodeFromFile}/>                
                 <JoinRoom modalVisible={this.state.joinroommodal} setModalVisible={this.joinRoomVisible} setInRoom={this.setInRoom}/>
             </div>
             )

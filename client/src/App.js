@@ -6,7 +6,6 @@ import LandingPage from './components/LandingPage/LandingPage';
 import Dashboard from './components/Dashboard/Dashboard';
 import { setUserData } from './actions/infoAction';
 
-
 class App extends Component {
     constructor(props){
         super(props);
