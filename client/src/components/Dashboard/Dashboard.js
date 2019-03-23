@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-import { Layout, Button, Avatar, Empty, Popconfirm, Tag, Timeline, Icon } from 'antd';
-import { Widget, addResponseMessage } from 'react-chat-widget';
+import { Layout, Button, Avatar, Empty, Popconfirm, Tag, Timeline } from 'antd';
 import CreateRoom from '../CreateRoom/CreateRoom';
 import RightSection from '../RightSection/RightSection';
 import JoinRoom from '../JoinRoom/JoinRoom';
@@ -54,8 +53,8 @@ class Dashboard extends Component {
         })
     }
 
+
     onCollapse = (collapsed) => {
-        console.log(collapsed);
         this.setState({ collapsed });
     }
 
@@ -78,18 +77,6 @@ class Dashboard extends Component {
     confirm = (e) => {
         this.props.onLogoutClick();
     }
-
-    handleNewUserMessage = (newMessage) => {
-        console.log(`New message incoming! ${newMessage}`);
-        // Now send the message throught the backend API
-        if(newMessage === 'hi' || newMessage === 'hey'){
-            addResponseMessage("hello");
-        }else if(newMessage === 'bye'){
-            addResponseMessage("goodbye");
-        }else{
-            addResponseMessage("i dont understand")
-        }
-      }
       
     run = (code, language) => {
         let value = code;
@@ -113,6 +100,8 @@ class Dashboard extends Component {
     }
     
     render(){
+
+
         if(_.isEmpty(this.props.userData)){
             return <div/>
         }else{
@@ -174,7 +163,7 @@ class Dashboard extends Component {
                         </Footer>
                     </Layout>
                 </Layout>
-                <Widget handleNewUserMessage={this.handleNewUserMessage} title='chat room' subtitle=''/>
+                {/* {this.state.Inroom && (<Widget handleNewUserMessage={this.handleNewUserMessage} title='chat room' subtitle=''/>)} */}
                 <CreateRoom modalVisible={this.state.createroommodal} setModalVisible={this.createRoomVisible} setInRoom={this.setInRoom} setCodeFromFile={this.setCodeFromFile}/>                
                 <JoinRoom modalVisible={this.state.joinroommodal} setModalVisible={this.joinRoomVisible} setInRoom={this.setInRoom}/>
             </div>

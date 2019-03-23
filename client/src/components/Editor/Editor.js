@@ -8,6 +8,8 @@ import AceEditor from 'react-ace';
 import { Input, Select, Button} from 'antd';
 
 import io from 'socket.io-client';
+import { Widget, addResponseMessage } from 'react-chat-widget';
+import 'react-chat-widget/lib/styles.css';
 
 // Import a Mode (language)
 import 'brace/mode/javascript';
@@ -24,10 +26,9 @@ import './Editor.scss';
 const Option = Select.Option;
 const InputGroup = Input.Group;
 
-const socket = io()
+const socket = io();
 
 class Editor extends Component {
-
     constructor(props, context) {
         super(props, context);
         this.state ={
@@ -35,8 +36,7 @@ class Editor extends Component {
             theme: 'tomorrow',
             code: '',
             room: '',
-            // users: [],
-            currentlyTyping: null
+            senderPhoto: ''
         }
 
         socket.on('receive code', (payload) => this.updateCodeFromSockets(payload));
@@ -44,6 +44,7 @@ class Editor extends Component {
         socket.on('receive users and code', (payload) => this.updateUsersAndCodeInState(payload))
         socket.on('new user join', (users) => this.joinUser(users))
         socket.on('user left room', (user) => this.removeUser(user))
+        socket.on('received message', (payload) => this.receivedMessage(payload));
     }
 
     componentWillMount() {
@@ -57,7 +58,6 @@ class Editor extends Component {
     onChange = (newValue) =>  {
         this.setState({
             code: newValue,
-            // currentlyTyping: `${this.props.userData.name}-${this.props.userData.id}`
         })
         this.props.setCurrentlyTyping(`${this.props.userData.name}-${this.props.userData.id}`)
         socket.emit('coding event', {code: newValue, room: this.state.room, currentlyTyping: `${this.props.userData.name}-${this.props.userData.id}`})
@@ -73,16 +73,26 @@ class Editor extends Component {
         const combinedUsers = [...this.props.users, user]
         const newUsers = Array.from(new Set(combinedUsers));
         const cleanUsers = newUsers.filter(user => {return user.length > 1})
-        // this.setState({users: cleanUsers})
         this.props.setUsers(cleanUsers)
     }
 
     removeUser(user) {
         const newUsers = Object.assign([], this.props.users);
-        const indexOfUserToDelete = this.props.users.findIndex(Olduser => {return Olduser == user.user})
+        const indexOfUserToDelete = this.props.users.findIndex(Olduser => {return Olduser === user.user})
         newUsers.splice(indexOfUserToDelete, 1);
-        // this.setState({users: newUsers})
         this.props.setUsers(newUsers)
+    }
+
+    receivedMessage(payload) {
+        console.log(payload)
+        this.setState({
+            senderPhoto: payload.photo
+        })
+        addResponseMessage(payload.message);
+    }
+
+    handleNewUserMessage = (newMessage) => {
+        socket.emit('sent message', {message: newMessage, room: this.props.roomData.roomName, user: `${this.props.userData.name}-${this.props.userData.id}`, photo: this.props.userData.photo})
       }
 
     componentDidMount() {
@@ -92,20 +102,17 @@ class Editor extends Component {
         this.setState({
             room: this.props.roomData.roomName,
             language: this.props.roomData.language,
-            // users: users
         }, () => socket.emit('room', {room: this.state.room, user: user}))  
     }
 
     componentWillUnmount() {
-        socket.emit('leave room', {room: this.state.room})
+        socket.emit('leave room', {room: this.state.room, user: `${this.props.userData.name}-${this.props.userData.id}`})
     }
     
 
     updateCodeFromSockets = (payload) => {
-        console.log(payload)
         this.setState({
             code: payload.code,
-            // currentlyTyping: payload.currentlyTyping
         });
         this.props.setCurrentlyTyping(payload.currentlyTyping)
     }
@@ -114,7 +121,6 @@ class Editor extends Component {
         this.setState({
             code: payload.code,
             language: payload.language,
-            // users: payload.users
         });
         let newUsers = [...payload.users, `${this.props.userData.name}-${this.props.userData.id}`]
         this.props.setUsers(newUsers)
@@ -169,6 +175,7 @@ class Editor extends Component {
                 showPrintMargin: false
                 }}
                 />
+                <Widget className='chat-widget' handleNewUserMessage={this.handleNewUserMessage} title='chat room' subtitle='' profileAvatar={this.state.senderPhoto}/>
             </div>
         );
     }

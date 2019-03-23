@@ -33,7 +33,9 @@ class VideoComponent extends Component {
  }
 
  componentWillUnmount() {
-   this.leaveRoom();
+   if(this.state.hasJoinedRoom === true){
+    this.leaveRoom();
+   }
  };
 
  joinRoom = () => {
