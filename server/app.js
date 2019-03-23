@@ -53,7 +53,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sent message', (data) => {
-    socket.broadcast.to(data.room).emit('received message', {user: data.user, message: data.message, photo: data.photo})
+    socket.broadcast.to(data.room).emit('received message', {user: data.user, photo: data.photo, message: data.message})
   });
 
   socket.on('coding event', function(data) {
